@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Formation DevOps - Docker & Jenkins - Geek Institut</title>
+    <style>
+        :root {
+            --bg-dark: #140022;
+            --bg-deep: #23003d;
+            --violet: #6d1dff;
+            --violet-soft: #8d3dff;
+            --pink: #ff00b8;
+            --pink-soft: #ff4bd1;
+            --blue: #43c7ff;
+            --cyan: #7ce7ff;
+            --yellow: #ffd54a;
+            --white: #ffffff;
+            --text-soft: rgba(255, 255, 255, 0.82);
+            --border: rgba(255, 255, 255, 0.18);
+            --glass: rgba(255, 255, 255, 0.08);
+            --shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+            --radius: 24px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            color: var(--white);
+            background:
+                radial-gradient(circle at 15% 20%, rgba(67, 199, 255, 0.20), transparent 18%),
+                radial-gradient(circle at 85% 18%, rgba(255, 0, 184, 0.28), transparent 22%),
+                radial-gradient(circle at 50% 55%, rgba(255, 75, 209, 0.16), transparent 26%),
+                radial-gradient(circle at 88% 82%, rgba(109, 29, 255, 0.28), transparent 18%),
+                linear-gradient(135deg, #120019 0%, #2a0047 45%, #59006d 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background:
+                linear-gradient(120deg, transparent 0 48%, rgba(255, 0, 184, 0.22) 49%, transparent 50%),
+                linear-gradient(150deg, transparent 0 62%, rgba(124, 231, 255, 0.12) 63%, transparent 64%),
+                linear-gradient(100deg, transparent 0 36%, rgba(255, 255, 255, 0.05) 37%, transparent 38%);
+            opacity: 0.65;
+        }
+
+        .page {
+            position: relative;
+            z-index: 1;
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 28px 0 60px;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 24px;
+            align-items: stretch;
+        }
+
+        .brand-card,
+        .hero-card,
+        .section,
+        .task-card,
+        .notice-card,
+        .footer-card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04));
+            border: 1px solid var(--border);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .brand-card {
+            padding: 26px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            min-height: 138px;
+        }
+
+        .brand-logo {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--blue), var(--violet));
+            display: grid;
+            place-items: center;
+            font-size: 2rem;
+            font-weight: 900;
+            color: white;
+            box-shadow: 0 0 30px rgba(67, 199, 255, 0.35);
+            flex-shrink: 0;
+        }
+
+        .brand-card h1 { font-size: clamp(1.8rem, 3vw, 2.6rem); letter-spacing: 0.5px; line-height: 1.05; }
+        .brand-card h1 span { color: var(--cyan); }
+        .brand-card p { margin-top: 8px; color: var(--text-soft); font-size: 1rem; }
+
+        .hero-card {
+            padding: 34px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-card::after {
+            content: "";
+            position: absolute;
+            right: -80px;
+            top: -80px;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 0, 184, 0.38), transparent 65%);
+        }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, rgba(109, 29, 255, 0.55), rgba(255, 0, 184, 0.45));
+            border: 1px solid rgba(255,255,255,0.18);
+            margin-bottom: 18px;
+        }
+
+        .hero-title {
+            font-size: clamp(2rem, 4.5vw, 3.8rem);
+            line-height: 0.95;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+            letter-spacing: 1px;
+            font-weight: 900;
+        }
+
+        .hero-title .accent { color: var(--pink-soft); text-shadow: 0 0 18px rgba(255, 75, 209, 0.35); }
+
+        .hero-text { font-size: 1.08rem; line-height: 1.8; color: var(--text-soft); }
+
+        .participant-box {
+            margin-top: 24px;
+            padding: 18px 20px;
+            border-radius: 18px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+            border: 1px solid rgba(255,255,255,0.14);
+        }
+
+        .participant-label {
+            font-size: 0.9rem;
+            color: var(--cyan);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+            display: block;
+            font-weight: 700;
+        }
+
+        .participant-name {
+            font-size: clamp(1.8rem, 4vw, 3rem);
+            font-weight: 900;
+            color: var(--yellow);
+            text-shadow: 0 0 18px rgba(255, 213, 74, 0.2);
+        }
+
+        .deploy-badge {
+            margin-top: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, rgba(67,199,255,0.18), rgba(109,29,255,0.22));
+            border: 1px solid rgba(67,199,255,0.30);
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--cyan);
+        }
+
+        .deploy-badge .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4cff91;
+            box-shadow: 0 0 8px #4cff91;
+            animation: pulse 1.4s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.35; }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .section { padding: 28px; }
+        .section h2 { font-size: 1.45rem; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.8px; }
+        .section p, .section li, .task-card li, .notice-card li { color: var(--text-soft); line-height: 1.8; font-size: 1rem; }
+        .section strong, .task-card strong, .notice-card strong { color: var(--yellow); }
+
+        .left-7 { grid-column: span 7; }
+        .right-5 { grid-column: span 5; }
+        .full { grid-column: 1 / -1; }
+        .half { grid-column: span 6; }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 18px;
+        }
+
+        .mini-card {
+            padding: 18px;
+            border-radius: 18px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .mini-card h3 { font-size: 1rem; margin-bottom: 8px; color: var(--cyan); text-transform: uppercase; }
+        .mini-card p { font-size: 0.96rem; color: var(--text-soft); }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.92rem;
+            padding: 8px 14px;
+            border-radius: 999px;
+            margin: 6px 8px 0 0;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .highlight {
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 90% 20%, rgba(255, 75, 209, 0.22), transparent 28%),
+                linear-gradient(135deg, rgba(109,29,255,0.25), rgba(255,0,184,0.12));
+            border: 1px solid rgba(255,255,255,0.18);
+        }
+
+        .highlight::before {
+            content: "DOCKER";
+            position: absolute;
+            right: 18px;
+            bottom: 10px;
+            font-size: clamp(2rem, 5vw, 4.4rem);
+            font-weight: 900;
+            color: rgba(255,255,255,0.06);
+            letter-spacing: 2px;
+            pointer-events: none;
+        }
+
+        .docker-title {
+            font-size: clamp(1.8rem, 4vw, 3rem);
+            line-height: 1;
+            text-transform: uppercase;
+            font-weight: 900;
+            margin-bottom: 12px;
+        }
+
+        .docker-title span { color: var(--pink-soft); }
+
+        ul.clean { list-style: none; margin-top: 12px; }
+        ul.clean li { margin-bottom: 8px; padding-left: 18px; position: relative; color: var(--text-soft); line-height: 1.8; }
+        ul.clean li::before { content: "▸"; position: absolute; left: 0; color: var(--yellow); font-weight: 900; }
+
+        .task-card, .notice-card, .footer-card { padding: 28px; }
+        .task-card h2, .notice-card h2, .footer-card h2 {
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 1.35rem;
+        }
+
+        /* Pipeline steps */
+        .pipeline {
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .pipe-step {
+            flex: 1;
+            min-width: 120px;
+            padding: 16px 12px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.13);
+            text-align: center;
+        }
+
+        .pipe-step .pipe-icon { font-size: 1.6rem; margin-bottom: 8px; }
+        .pipe-step .pipe-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--cyan); font-weight: 700; margin-bottom: 4px; }
+        .pipe-step .pipe-desc { font-size: 0.82rem; color: var(--text-soft); }
+
+        .callout {
+            margin-top: 16px;
+            padding: 16px 18px;
+            border-left: 4px solid var(--pink-soft);
+            border-radius: 14px;
+            background: rgba(255,255,255,0.06);
+            color: #fff;
+            line-height: 1.7;
+        }
+
+        .code-box {
+            margin-top: 16px;
+            padding: 16px 20px;
+            border-radius: 16px;
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.12);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--cyan);
+            line-height: 1.9;
+            overflow-x: auto;
+        }
+
+        .code-box .kw { color: var(--pink-soft); font-weight: 700; }
+        .code-box .cm { color: rgba(255,255,255,0.35); }
+
+        .footer-card { text-align: center; }
+        .footer-card p { color: var(--text-soft); line-height: 1.8; max-width: 860px; margin: 0 auto; }
+        .signature { margin-top: 18px; font-size: 1.05rem; font-weight: 700; color: var(--yellow); letter-spacing: 0.5px; }
+
+        @media (max-width: 960px) {
+            .hero { grid-template-columns: 1fr; }
+            .left-7, .right-5, .half, .full { grid-column: 1 / -1; }
+            .cards { grid-template-columns: 1fr; }
+            .pipeline { flex-direction: column; }
+        }
+
+        @media (max-width: 640px) {
+            .page { padding-top: 12px; padding-bottom: 28px; }
+            .brand-card, .hero-card, .section, .task-card, .notice-card, .footer-card {
+                padding: 20px;
+                border-radius: 20px;
+            }
+            .brand-card { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+<main class="page">
+
+    <!-- HEADER -->
+    <section class="hero">
+        <div class="brand-card">
+            <div class="brand-logo">Gi</div>
+            <div>
+                <h1>Geek <span>Institut</span></h1>
+                <p>Formation pratique, professionnelle et orientée déploiement réel.</p>
+            </div>
+        </div>
+
+        <div class="hero-card">
+            <span class="eyebrow">Atelier DevOps — Séance en cours</span>
+            <h2 class="hero-title">Docker <span class="accent">&</span> Jenkins</h2>
+            <p class="hero-text">
+                Ce site a été <strong>conteneurisé avec Docker</strong> et déployé automatiquement via un
+                <strong>pipeline Jenkins</strong> déclenché par un simple <strong>git push</strong>.
+            </p>
+
+            <div class="participant-box">
+                <span class="participant-label">Déployé par</span>
+                <div class="participant-name">[Remplace par ton prénom]</div>
+            </div>
+
+            <div class="deploy-badge">
+                <span class="dot"></span>
+                Déployé automatiquement · Docker + Jenkins · CI/CD
+            </div>
+        </div>
+    </section>
+
+    <!-- GRID -->
+    <section class="grid">
+
+        <!-- CE QU'ON A FAIT -->
+        <article class="section left-7">
+            <h2>Ce que cet atelier nous a appris</h2>
+            <p>
+                Aujourd'hui, nous avons mis en place une <strong>chaîne de déploiement continu complète</strong> :
+                du poste du développeur jusqu'au serveur de production, sans aucune intervention manuelle.
+                Chaque <code style="color:var(--cyan)">git push</code> suffit à tout déclencher.
+            </p>
+
+            <div class="cards">
+                <div class="mini-card">
+                    <h3>Image Docker</h3>
+                    <p>Un modèle figé contenant l'application et tout son environnement. Construit depuis le <strong>Dockerfile</strong>.</p>
+                </div>
+                <div class="mini-card">
+                    <h3>Conteneur Docker</h3>
+                    <p>Une instance en cours d'exécution de l'image. Isolé, léger, redémarre automatiquement avec <strong>--restart always</strong>.</p>
+                </div>
+                <div class="mini-card">
+                    <h3>Dockerfile</h3>
+                    <p>Le fichier de recette. <strong>FROM nginx:alpine</strong>, COPY, EXPOSE 80, CMD — quatre lignes suffisent.</p>
+                </div>
+                <div class="mini-card">
+                    <h3>Port mapping</h3>
+                    <p>Le conteneur est isolé. Le flag <strong>-p 8101:80</strong> le rend accessible depuis l'extérieur.</p>
+                </div>
+            </div>
+        </article>
+
+        <!-- PIPELINE VISUEL -->
+        <article class="section right-5 highlight">
+            <h2 class="docker-title">Pipeline <span>Jenkins</span></h2>
+            <p style="color:var(--text-soft); font-size:1rem; line-height:1.7;">
+                Le Jenkinsfile orchestre cinq stages qui s'enchaînent à chaque push.
+            </p>
+
+            <div class="pipeline">
+                <div class="pipe-step">
+                    <div class="pipe-icon">📥</div>
+                    <div class="pipe-label">Checkout</div>
+                    <div class="pipe-desc">Clone ou pull le dépôt</div>
+                </div>
+                <div class="pipe-step">
+                    <div class="pipe-icon">🔨</div>
+                    <div class="pipe-label">Build</div>
+                    <div class="pipe-desc">docker build</div>
+                </div>
+                <div class="pipe-step">
+                    <div class="pipe-icon">🗑️</div>
+                    <div class="pipe-label">Stop/Rm</div>
+                    <div class="pipe-desc">Supprime l'ancien</div>
+                </div>
+                <div class="pipe-step">
+                    <div class="pipe-icon">🚀</div>
+                    <div class="pipe-label">Run</div>
+                    <div class="pipe-desc">docker run -d -p</div>
+                </div>
+                <div class="pipe-step">
+                    <div class="pipe-icon">✅</div>
+                    <div class="pipe-label">Verify</div>
+                    <div class="pipe-desc">Vérifie les logs</div>
+                </div>
+            </div>
+
+            <div style="margin-top:16px;">
+                <span class="tag">Docker</span>
+                <span class="tag">Jenkins</span>
+                <span class="tag">nginx:alpine</span>
+                <span class="tag">CI/CD</span>
+            </div>
+        </article>
+
+        <!-- DOCKERFILE -->
+        <article class="task-card half">
+            <h2>Notre Dockerfile</h2>
+            <p style="color:var(--text-soft); margin-bottom:4px;">Quatre lignes suffisent pour conteneuriser ce site :</p>
+            <div class="code-box">
+                <span class="kw">FROM</span> nginx:alpine<br>
+                <br>
+                <span class="kw">COPY</span> index.html /usr/share/nginx/html/index.html<br>
+                <br>
+                <span class="kw">EXPOSE</span> 80<br>
+                <br>
+                <span class="kw">CMD</span> ["nginx", "-g", "daemon off;"]
+            </div>
+            <div class="callout" style="margin-top:16px;">
+                <strong style="color:var(--yellow)">daemon off;</strong> maintient Nginx en premier plan.
+                Sans cette option, le conteneur s'arrêterait immédiatement au démarrage.
+            </div>
+        </article>
+
+        <!-- CONSIGNE DEVOIR -->
+        <article class="notice-card half">
+            <h2>Ton devoir — une seule consigne</h2>
+            <ul class="clean">
+                <li>Remplace <strong>[Remplace par ton prénom]</strong> dans ce fichier par ton vrai prénom.</li>
+                <li>Pousse le fichier modifié sur ton dépôt GitHub avec un <strong>git push</strong>.</li>
+                <li>Vérifie que le pipeline Jenkins se déclenche <strong>automatiquement</strong>.</li>
+                <li>Confirme que ton prénom est <strong>visible en ligne</strong> sur le serveur.</li>
+            </ul>
+            <div class="callout">
+                Le but n'est pas de changer le design, mais de <strong>prouver que la chaîne fonctionne</strong> :
+                git push → webhook → Jenkins → Docker → site mis à jour en production.
+            </div>
+        </article>
+
+        <!-- POURQUOI DOCKER EN DEVOPS -->
+        <article class="section full">
+            <h2>Pourquoi Docker est incontournable en DevOps</h2>
+            <p>
+                Avant Docker, le problème classique était : <em style="color:var(--cyan)">« ça marche sur ma machine »</em>.
+                Docker résout cela en empaquetant l'application avec <strong>tout son environnement</strong>.
+                Peu importe le serveur, le comportement est identique.
+            </p>
+            <div class="cards">
+                <div class="mini-card">
+                    <h3>Reproductibilité</h3>
+                    <p>L'environnement d'exécution est identique du poste du développeur au serveur de production.</p>
+                </div>
+                <div class="mini-card">
+                    <h3>Isolation</h3>
+                    <p>Chaque application tourne dans son propre conteneur sans interférer avec les autres.</p>
+                </div>
+                <div class="mini-card">
+                    <h3>Rollback instantané</h3>
+                    <p>Les images Docker sont versionnées. Revenir à une version précédente prend quelques secondes.</p>
+                </div>
+                <div class="mini-card">
+                    <h3>Scalabilité</h3>
+                    <p>Lancer plusieurs instances d'un conteneur se fait en une seule commande. Base de Kubernetes.</p>
+                </div>
+            </div>
+        </article>
+
+        <!-- FOOTER -->
+        <article class="footer-card full">
+            <h2>Projet déployé avec Docker &amp; Jenkins</h2>
+            <p>
+                Cette page est le résultat concret de l'atelier DevOps de <strong>Geek Institut</strong>.
+                Elle a été construite en image Docker, lancée dans un conteneur via un pipeline Jenkins,
+                et mise à jour automatiquement à chaque <strong>git push</strong> sur la branche main.
+                C'est exactement la logique de déploiement des équipes DevOps professionnelles.
+            </p>
+            <div class="signature">Geek Institut · Atelier Docker & Jenkins · Déploiement continu</div>
+        </article>
+
+    </section>
+</main>
+</body>
+</html>
